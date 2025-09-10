@@ -5,7 +5,7 @@ on:
     branches: ["main"]
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: "andrasbacsai/github-actions-with-coolify"
+  IMAGE_NAME: "franciscobmacedo/github-actions-with-coolify"
 
 jobs:
   amd64:
