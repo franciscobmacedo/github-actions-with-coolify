@@ -1,11 +1,12 @@
-# For more details, read this: https://coolify.io/docs/github-actions
 name: Build Static Image
 on:
   push:
     branches: ["main"]
+
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: "franciscobmacedo/github-actions-with-coolify"
+  # Use your repo as image name, always lowercase for GHCR
+  IMAGE_NAME: "${{ github.repository }}" # e.g., franciscobmacedo/your-repo
 
 jobs:
   amd64:
@@ -14,21 +15,26 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v3
-      - name: Login to ghcr.io
-        uses: docker/login-action@v2
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.TOKEN  }}
-      - name: Build image and push to registry
-        uses: docker/build-push-action@v4
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
       - name: Deploy to Coolify
-        run: | 
-         curl --request GET '${{ secrets.COOLIFY_WEBHOOK }}' --header 'Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}'
+        run: |
+          curl --request GET '${{ secrets.COOLIFY_WEBHOOK }}' \
+            --header 'Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}'
